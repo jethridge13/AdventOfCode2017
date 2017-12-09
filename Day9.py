@@ -37,7 +37,6 @@ def calcGarbage(line):
 			if line[i] == '{':
 				stack.append('{')
 			elif line[i] == '}':
-				score += len(stack)
 				stack.pop()
 			elif line[i] == '<':
 				garbage = True
@@ -54,7 +53,7 @@ def load(path):
 	data = ''
 	with open(path, 'r') as f:
 		data = f.read()
-	return data
+	return data.replace('\n', '')
 
 class TestDay9(unittest.TestCase):
 
@@ -108,5 +107,5 @@ if __name__ == '__main__':
 	#unittest.main()
 	# Part 1: 10050
 	print(calcScore(load('Day9.txt')))
-	# Part2: 14532
+	# Part2: 4482
 	print(calcGarbage(load('Day9.txt')))
