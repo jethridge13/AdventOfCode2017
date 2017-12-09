@@ -6,8 +6,23 @@ def calc(array):
 		line = parseLine(i)
 		if registers.get(line['reg']) == None:
 			registers[line['reg']] = 0
-		condition = parseConditoin(line['con'])
-	return
+		condition = parseCondition(line['con'])
+		if evalCondition(condition, registers):
+			modifyReg(line['reg'], line['ins'], line['val'], registers)
+	return largestInDict(registers)
+
+def calc2(array):
+	registers = {}
+	m = -1
+	for i in array:
+		line = parseLine(i)
+		if registers.get(line['reg']) == None:
+			registers[line['reg']] = 0
+		condition = parseCondition(line['con'])
+		if evalCondition(condition, registers):
+			modifyReg(line['reg'], line['ins'], line['val'], registers)
+		m = max(m, largestInDict(registers))
+	return m
 
 def parseLine(line):
 	line = line.replace('\n', '')
@@ -30,16 +45,31 @@ def parseCondition(ins):
 
 def evalCondition(con, d):
 	c = con['con']
+	if d.get(con['reg']) == None:
+		d[con['reg']] = 0
 	reg = d[con['reg']]
 	val = con['val']
 	return {
-		'>': lambda : reg > val,
-		'<': lambda : reg < val,
-		'>=': lambda: reg >= val,
-		'<=': lambda: reg <= val,
-		'==': lambda: reg == val,
-		'!=': lambda: reg != val
-	}[c]
+		'>': lambda reg, val: reg > val,
+		'<': lambda reg, val: reg < val,
+		'>=': lambda reg, val: reg >= val,
+		'<=': lambda reg, val: reg <= val,
+		'==': lambda reg, val: reg == val,
+		'!=': lambda reg, val: reg != val
+	}[c](reg, val)
+
+def largestInDict(d):
+	m = -1
+	for key, value in d.items():
+		m = max(m, value)
+	return m
+
+def modifyReg(reg, ins, val, d):
+	if ins == 'inc':
+		d[reg] += val
+	elif ins == 'dec':
+		d[reg] -= val
+	return d
 
 def load(path):
 	data = []
@@ -81,8 +111,21 @@ class TestDay8(unittest.TestCase):
 		self.assertFalse(evalCondition(i3, {'a': 0}))
 		self.assertFalse(evalCondition(i4, {'c': 0}))
 
-if __name__ == '__main__':
-	unittest.main()
-	# Part 1:
+	def test4(self):
+		t = {'a': 1, 'b': 2, 'c': 3}
+		self.assertEqual(largestInDict(t), 3)
 
-	# Part 2:
+	def test5(self):
+		t = load('Day8Test1.txt')
+		self.assertEqual(calc(t), 1)
+
+	def test6(self):
+		t = load('Day8Test1.txt')
+		self.assertEqual(calc2(t), 1)
+
+if __name__ == '__main__':
+	#unittest.main()
+	# Part 1: 7787
+	print(calc(load('Day8.txt')))
+	# Part 2: 8997
+	print(calc2(load('Day8.txt')))
