@@ -1,16 +1,33 @@
 import unittest
 
 def calc(data):
-	return -1
+	severity = 0
+	for i in data.keys():
+		if isZero(i, data[i]):
+			severity += i * data[i]
+	return severity
+
+def calc2(data):
+	step = -1
+	found = False
+	while True:
+		step += 1
+		found = False
+		for i in data.keys():
+			if isZero(i + step, data[i]):
+				found = True
+				break
+		if not found:
+			return step
+
+
+def isZero(step, arrayLen):
+	return step % (2 * arrayLen - 2) == 0
 
 def getPos(step, arrayLen):
-	if arrayLen == 2:
-		return step % arrayLen
-	pos = 0
-	pos = step % ((arrayLen  * 2) - 1)
+	pos = step % (2 * arrayLen - 2)
 	if pos >= arrayLen:
-		print(pos)
-		pos = arrayLen - pos + 1
+		return pos - 2
 	return pos
 
 def load(path):
@@ -32,26 +49,16 @@ class TestDay13(unittest.TestCase):
 		self.assertEqual(t, d)
 
 	def test2(self):
-		arrayLen = 3
-		self.assertEqual(getPos(0, arrayLen), 0)
-		self.assertEqual(getPos(1, arrayLen), 1)
-		self.assertEqual(getPos(2, arrayLen), 2)
-		self.assertEqual(getPos(3, arrayLen), 1)
-		self.assertEqual(getPos(4, arrayLen), 0)
-		self.assertEqual(getPos(5, arrayLen), 1)
-		self.assertEqual(getPos(6, arrayLen), 2)
-		self.assertEqual(getPos(7, arrayLen), 1)
-	
+		t = load('Day13Test1.txt')
+		self.assertEqual(calc(t), 24)
+
 	def test3(self):
-		arrayLen = 2
-		self.assertEqual(getPos(0, arrayLen), 0)
-		self.assertEqual(getPos(1, arrayLen), 1)
-		self.assertEqual(getPos(2, arrayLen), 0)
-		self.assertEqual(getPos(3, arrayLen), 1)
+		t = load('Day13Test1.txt')
+		self.assertEqual(calc2(t), 10)
 
 if __name__ == '__main__':
-	unittest.main()
-	# Part 1:
-
-	# Part 2:
-
+	#unittest.main()
+	# Part 1: 1588
+	print(calc(load('Day13.txt')))
+	# Part 2: 3865118
+	print(calc2(load('Day13.txt')))
