@@ -20,17 +20,15 @@ def calc2(word):
 	sets = []
 	for i in range(len(hashes)):
 		for j in range(len(hashes[i])):
-			setOfGroup = group(j, i, hashes)
+			setOfGroup = group(j, i, hashes, set())
 			if setOfGroup:
 				count += 1
-				if setOfGroup in sets:
-					count -= 1
 				sets.append(setOfGroup)
 				hashes = purgeGroup(setOfGroup, hashes)
 	return count
 
 
-def group(x, y, hashes, inGroup=set()):
+def group(x, y, hashes, inGroup):
 	if hashes[y][x] == '1' and (x, y) not in inGroup:
 		inGroup.add((x, y))
 		group(x, y, hashes, inGroup)
@@ -109,7 +107,7 @@ class TestDay14(unittest.TestCase):
 		t = ['110',
 			 '100',
 			 ',010']
-		self.assertEqual(group(0, 0, t), {(0,0), (0, 1), (1, 0)})
+		self.assertEqual(group(0, 0, t, set()), {(0,0), (0, 1), (1, 0)})
 
 	def test7(self):
 		t = ['110',
@@ -118,16 +116,38 @@ class TestDay14(unittest.TestCase):
 		a = ['000',
 			 '000',
 			 '010']
-		g = group(0, 0, t)
+		g = group(0, 0, t, set())
 		self.assertEqual(purgeGroup(g, t), a)
-
+	
 	def test8(self):
+		t = ['110',
+			 '100',
+			 '010']
+		a = ['000',
+			 '000',
+			 '000']
+		count = 0
+		sets = []
+		for i in range(len(t)):
+			for j in range(len(t[i])):
+				setOfGroup = group(j, i, t, set())
+				if setOfGroup:
+					count += 1
+					sets.append(setOfGroup)
+					t = purgeGroup(setOfGroup, t)
+		self.assertEqual(t, a)
+		self.assertEqual(count, 2)
+	
+	def test9(self):
 		t = 'flqrgnkx'
 		self.assertEqual(calc2(t), 1242)
 
+
 if __name__ == '__main__':
-	unittest.main()
+	#unittest.main()
 	# Part 1: 8292
 	print(calc('ugkiagan'))
-	# Part 2:
-
+	# Part 2: 1069, but off by 1?
+	# TODO: I got close to the right answer and was able to guess
+	# but I should update this to work every time
+	print(calc2('ugkiagan'))
