@@ -11,6 +11,51 @@ def calc(word):
 		count += i.count('1')
 	return count
 
+def calc2(word):
+	array = arrayify(word)
+	hashes = []
+	for i in array:
+		hashes.append(hexToBin(Day10.calc2Main(list(range(0, 256)), i)))
+	count = 0
+	sets = []
+	for i in range(len(hashes)):
+		for j in range(len(hashes[i])):
+			setOfGroup = group(j, i, hashes)
+			if setOfGroup:
+				count += 1
+				if setOfGroup in sets:
+					count -= 1
+				sets.append(setOfGroup)
+				hashes = purgeGroup(setOfGroup, hashes)
+	return count
+
+
+def group(x, y, hashes, inGroup=set()):
+	if hashes[y][x] == '1' and (x, y) not in inGroup:
+		inGroup.add((x, y))
+		group(x, y, hashes, inGroup)
+	if x - 1 >= 0 and hashes[y][x-1] == '1' and (x - 1, y) not in inGroup:
+		inGroup.add((x, y))
+		group(x - 1, y, hashes, inGroup)
+	if x + 1 < len(hashes[y]) and hashes[y][x+1] == '1' and (x + 1, y) not in inGroup:
+		inGroup.add((x, y))
+		group(x + 1, y, hashes, inGroup)
+	if y - 1 >= 0 and hashes[y-1][x] == '1' and (x, y - 1) not in inGroup:
+		inGroup.add((x, y))
+		group(x, y - 1, hashes, inGroup)
+	if y + 1 < len(hashes) and hashes[y+1][x] == '1' and (x, y + 1) not in inGroup:
+		inGroup.add((x, y))
+		group(x, y + 1, hashes, inGroup)
+	return inGroup
+
+def purgeGroup(group, hashes):
+	for i in group:
+		word = hashes[i[1]]
+		index = i[0]
+		s = word[:index] + '0' + word[index + 1:]
+		hashes[i[1]] = s
+	return hashes
+
 def arrayify(string, size=128):
 	data = []
 	for i in range(size):
@@ -60,9 +105,28 @@ class TestDay14(unittest.TestCase):
 		t = 'flqrgnkx'
 		self.assertEqual(calc(t), 8108)
 
+	def test6(self):
+		t = ['110',
+			 '100',
+			 ',010']
+		self.assertEqual(group(0, 0, t), {(0,0), (0, 1), (1, 0)})
+
+	def test7(self):
+		t = ['110',
+			 '100',
+			 '010']
+		a = ['000',
+			 '000',
+			 '010']
+		g = group(0, 0, t)
+		self.assertEqual(purgeGroup(g, t), a)
+
+	def test8(self):
+		t = 'flqrgnkx'
+		self.assertEqual(calc2(t), 1242)
 
 if __name__ == '__main__':
-	#unittest.main()
+	unittest.main()
 	# Part 1: 8292
 	print(calc('ugkiagan'))
 	# Part 2:
