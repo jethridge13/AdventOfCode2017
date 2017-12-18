@@ -5,15 +5,21 @@ def calc(steps, end):
 	return array[pos + 1]
 
 def calc2(steps, end):
-	# Too inefficient
-	array, pos = genArray(steps, end)
-	return array[array.indexof(0) + 1]
+	length = 1
+	pos = 0
+	e = -1
+	for i in range(1, end):
+		pos = (pos + steps) % length
+		length += 1
+		if pos == 0:
+			e = i
+		pos += 1
+	return e
 	
 def genArray(steps, end):
 	pos = 0
 	array = [0]
 	for i in range(end):
-		print(i)
 		array, pos = spinList(array, i + 1, pos, steps)
 	return array, pos
 
@@ -37,9 +43,14 @@ class TestDay14(unittest.TestCase):
 		t = calc(3, 2017)
 		self.assertEqual(t, 638)
 
+	def test4(self):
+		t = calc2(3, 10)
+		self.assertEqual(t, 9)
+		calc(3, 10)
+
 if __name__ == '__main__':
 	#unittest.main()
 	# Part 1: 1487
-	#print(calc(367, 2017))
+	print(calc(367, 2017))
 	# Part 2:
 	print(calc2(367, 50000000))
