@@ -52,5 +52,5 @@ if __name__ == '__main__':
 	#unittest.main()
 	# Part 1: 1487
 	print(calc(367, 2017))
-	# Part 2:
+	# Part 2: 25674054
 	print(calc2(367, 50000000))
