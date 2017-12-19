@@ -55,23 +55,22 @@ def calc(ins):
 
 def calc2(ins):
 	threads = []
-	sent = 0
+	sent = [0]
 	threads.append(Thread(target=threadCalc, args=(ins, 0, sent)))
 	threads.append(Thread(target=threadCalc, args=(ins, 1, sent)))
 	for i in threads:
 		i.start()
 	for i in threads:
 		i.join()
-	return sent
+	return sent[0]
 
-rcv0 = False
-rcv1 = False
+rcv = [False, False]
+rcvSent = [0, 0]
 
 rcv0Queue = []
 rcv1Queue = []
 
-rcv0Lock = threading.Lock()
-rcv1Lock = threading.Lock()
+rcvLock = threading.Lock()
 rcv0QLock = threading.Lock()
 rcv1QLock = threading.Lock()
 
@@ -80,16 +79,18 @@ def threadCalc(ins, tid, sent):
 	global rcv1
 	global rcv0Queue
 	global rcv1Queue
-	global rcv0Lock
-	global rcv1Lock
+	global rcvLock
+	global rcvSent
 	reg = {}
 	reg['p'] = tid
 	i = 0
 	insSent = 0
 	while True:
 		data = parseIns(ins[i])
-		print(tid, data)
-		if reg.get(data['reg']) == None:
+		print(tid, data, reg, i)
+		# Create register if necessary
+		if reg.get(data['reg']) == None and \
+		not checkInt(data['reg']):
 			reg[data['reg']] = 0
 		if data.get('val') is not None and \
 		not isinstance(data['val'], int) and \
@@ -99,17 +100,21 @@ def threadCalc(ins, tid, sent):
 		if data['ins'] == 'snd':
 			if tid == 0:
 				rcv1QLock.acquire()
-				print(tid, 'rcv1QLock Acquired')
-				rcv1Queue.append(data['reg'])
+				if checkInt(data['reg']):
+					rcv1Queue.append(int(data['reg']))
+				else:
+					rcv1Queue.append(reg[data['reg']])
+				rcvSent[0] += 1
 				rcv1QLock.release()
-				print(tid, 'rcv1QLock Released')
 			else:
 				insSent += 1
 				rcv0QLock.acquire()
-				print(tid, 'rcv0QLock Acquired')
-				rcv0Queue.append(data['reg'])
+				if checkInt(data['reg']):
+					rcv0Queue.append(int(data['reg']))
+				else:
+					rcv0Queue.append(reg[data['reg']])
+				rcvSent[1] += 1
 				rcv0QLock.release()
-				print(tid, 'rcv0QLock Released')
 		elif data['ins'] == 'set':
 			if isinstance(data['val'], int):
 				reg[data['reg']] = data['val']
@@ -131,60 +136,65 @@ def threadCalc(ins, tid, sent):
 			else:
 				reg[data['reg']] %= reg[data['val']]
 		elif data['ins'] == 'rcv':
-			if i == 0:
+			if tid == 0:
 				while True:
-					rcv0Lock.acquire()
-					#print(tid, 'rcv0Lock Acquired')
-					rcv0 = True
-					print(tid, rcv1)
+					rcvLock.acquire()
 					if len(rcv0Queue) > 0:
 						reg[data['reg']] = rcv0Queue.pop()
-						#rcv0 = False
-						rcv0Lock.release()
-						#print(tid, 'rcv0Lock Released')
+						rcvSent[1] -= 1
+						popped = True
+						rcv[0] = False
+						rcvLock.release()
 						break;
-					rcv0Lock.release()
-					#print(tid, 'rcv0Lock Released')
-					#rcv1Lock.acquire()
-					#print(tid, 'rcv1Lock Acquired')
-					print(tid, 'check', rcv1)
-					if rcv1:
-						#rcv1Lock.release()
-						#print(tid, 'rcv1Lock Released')
-						#print(tid, 'Returning')
-						return
-					#rcv1Lock.release()
+					rcv[0] = True
+					rcvLock.release()
+					rcvLock.acquire()
+					if rcv[1]:
+						rcv1QLock.acquire()
+						if not popped and not rcvSent[0] and not rcvSent[1]:
+							rcv1QLock.release()
+							rcvLock.release()
+							print(tid, 'Returning')
+							return
+						rcv1QLock.release()
+					popped = False
+					rcvLock.release()
 			else:
 				while True:
-					rcv1Lock.acquire()
-					#print(tid, 'rcv1Lock Acquired')
-					rcv1 = True
-					print(tid, rcv0)
+					rcvLock.acquire()
 					if len(rcv1Queue) > 0:
 						reg[data['reg']] = rcv1Queue.pop()
-						#rcv1 = False
-						rcv1Lock.release()
-						#print(tid, 'rcv1Lock Released')
+						rcvSent[0] -= 1
+						popped = True
+						rcv[1] = False
+						rcvLock.release()
 						break;
-					rcv1Lock.release()
-					#print(tid, 'rcv1QLock Released')
-					#rcv0Lock.acquire()
-					#print(tid, 'rcv0Lock Acquired')
-					print(tid, 'check', rcv0)
-					if rcv0:
-						#rcv0Lock.release()
-						#print(tid, 'rcv0Lock Released')
-						print(tid, 'Returning')
-						return
-					#rcv0Lock.release()
-
+					rcv[1] = True
+					rcvLock.release()
+					rcvLock.acquire()
+					if rcv[0]:
+						rcv0QLock.acquire()
+						if not popped and not rcvSent[0] and not rcvSent[1]:
+							rcvLock.release()
+							rcv0QLock.release()
+							sent[0] = insSent
+							print(tid, 'Returning')
+							print(insSent)
+							return
+						rcv0QLock.release()
+					popped = False
+					rcvLock.release()
 		elif data['ins'] == 'jgz':
-			if reg[data['reg']] > 0:
+			if checkInt(data['reg']) and int(data['reg']) > 0:
 				if isinstance(data['val'], int):
 					i += data['val'] - 1
 				else:
 					i += reg[data['val']] - 1
-
+			elif reg[data['reg']] > 0:
+				if isinstance(data['val'], int):
+					i += data['val'] - 1
+				else:
+					i += reg[data['val']] - 1
 		i += 1
 	return insSent
 
@@ -197,7 +207,6 @@ def checkInt(s):
 def parseIns(line):
 	line = line.replace('\n', '')
 	stuff = line.split(' ')
-	#print(stuff)
 	data = {}
 	data['ins'] = stuff[0]
 	data['reg'] = stuff[1]
@@ -238,5 +247,5 @@ if __name__ == '__main__':
 	unittest.main()
 	# Part 1: 8600
 	print(calc(load('Day18.txt')))
-	# Part 2:
-
+	# Part 2: >6589 <7690 NOT 7201 NOT 131
+	print(calc2(load('Day18.txt')))
