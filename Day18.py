@@ -1,4 +1,6 @@
 import unittest
+from threading import Thread
+import threading
 
 def calc(ins):
 	reg = {}
@@ -49,7 +51,116 @@ def calc(ins):
 					i += reg[data['val']] - 1
 
 		i += 1
-	return -1
+	return lastPlayedSound
+
+def calc2(ins):
+	threads = []
+	sent = 0
+	threads.append(Thread(target=threadCalc, args=(ins, 0, sent)))
+	threads.append(Thread(target=threadCalc, args=(ins, 1, sent)))
+	for i in threads:
+		i.start()
+	for i in threads:
+		i.join()
+	return sent
+
+rcv0 = False
+rcv1 = False
+
+rcv0Queue = []
+rcv1Queue = []
+
+rcv0Lock = threading.Lock()
+rcv1Lock = threading.Lock()
+
+def threadCalc(ins, tid, sent):
+	global rcv0
+	global rcv1
+	global rcv0Queue
+	global rcv1Queue
+	global rcv0Lock
+	global rcv1Lock
+	reg = {}
+	i = 0
+	insSent = 0
+	while True:
+		data = parseIns(ins[i])
+		print(tid, data)
+		if reg.get(data['reg']) == None:
+			reg[data['reg']] = 0
+		if data.get('val') is not None and \
+		not isinstance(data['val'], int) and \
+		reg.get(data['val']) == None:
+			reg[data['val']] = 0
+		# Parse instructions
+		if data['ins'] == 'snd':
+			if tid == 0:
+				rcv1Lock.acquire()
+				rcv1Queue.append(data['reg'])
+				rcv1Lock.release()
+			else:
+				insSent += 1
+				rcv0Lock.acquire()
+				rcv0Queue.append(data['reg'])
+				rcv0Lock.release()
+		elif data['ins'] == 'set':
+			if isinstance(data['val'], int):
+				reg[data['reg']] = data['val']
+			else:
+				reg[data['reg']] = reg[data['val']]
+		elif data['ins'] == 'add':
+			if isinstance(data['val'], int):
+				reg[data['reg']] += data['val']
+			else:
+				reg[data['reg']] += reg[data['val']]
+		elif data['ins'] == 'mul':
+			if isinstance(data['val'], int):
+				reg[data['reg']] *= data['val']
+			else:
+				reg[data['reg']] *= reg[data['val']]
+		elif data['ins'] == 'mod':
+			if isinstance(data['val'], int):
+				reg[data['reg']] %= data['val']
+			else:
+				reg[data['reg']] %= reg[data['val']]
+		elif data['ins'] == 'rcv':
+			if i == 0:
+				while True:
+					rcv0Lock.acquire()
+					rcv0 = True
+					if len(rcv0Queue) > 0:
+						reg[data['reg']] = rcv0Queue.pop()
+						rcv0Lock.release()
+						break;
+					rcv0Lock.release()
+					rcv1Lock.acquire()
+					if rcv1:
+						rcv1Lock.release()
+						return
+			else:
+				while True:
+					rcv1Lock.acquire()
+					rcv1 = True
+					if len(rcv0Queue) > 0:
+						reg[data['reg']] = rcv0Queue.pop()
+						rcv1Lock.release()
+						break;
+					rcv1Lock.release()
+					rcv0Lock.acquire()
+					if rcv0:
+						rcv0Lock.release()
+						return
+
+		elif data['ins'] == 'jgz':
+			if reg[data['reg']] > 0:
+				if isinstance(data['val'], int):
+					i += data['val'] - 1
+				else:
+					i += reg[data['val']] - 1
+
+		i += 1
+	return insSent
+
 
 def checkInt(s):
 	if s[0] in ('-', '+'):
@@ -92,8 +203,12 @@ class TestDay14(unittest.TestCase):
 		t = load('Day18Test1.txt')
 		self.assertEqual(calc(t), 4)
 
+	def test3(self):
+		t = load('Day18Test2.txt')
+		self.assertEqual(calc2(t), 3)
+
 if __name__ == '__main__':
-	#unittest.main()
+	unittest.main()
 	# Part 1: 8600
 	print(calc(load('Day18.txt')))
 	# Part 2:
