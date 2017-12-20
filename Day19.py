@@ -41,9 +41,13 @@ def canContinue(array, x, y, dire):
 			s = checkIndex(array, x - 1, y)
 		else:
 			return False
-	if re.match('A-Z+'):
+	if re.match('A-Z+', s):
 		return True
-	return -1
+	if (dire == 'N' || dire == 'S'):
+		if s == '|':
+			return True
+			
+	return False
 
 def findStart(data):
 	for i in range(len(data[0])):
