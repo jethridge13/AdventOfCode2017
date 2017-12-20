@@ -5,6 +5,7 @@ def calc(array):
 	start = [findStart(array), 0]
 	index = start
 	path = []
+	count = 1
 	direction = 'S'
 	lastDirection = 'N'
 	moved = False
@@ -28,6 +29,7 @@ def calc(array):
 				index[0] -= 1
 				moved = True
 		if moved:
+			count += 1
 			moved = False
 			if re.match(r'[A-Z]', array[index[1]][index[0]]):
 				path.append(array[index[1]][index[0]])
@@ -37,29 +39,33 @@ def calc(array):
 				lastDirection = 'S'
 				direction = 'N'
 				index[1] -= 1
+				count += 1
 				if re.match(r'[A-Z]', array[index[1]][index[0]]):
 					path.append(array[index[1]][index[0]])
 			elif lastDirection != 'S' and canContinue(array, index[0], index[1], 'S'):
 				lastDirection = 'N'
 				direction = 'S'
 				index[1] += 1
+				count += 1
 				if re.match(r'[A-Z]', array[index[1]][index[0]]):
 					path.append(array[index[1]][index[0]])
 			elif lastDirection != 'E' and canContinue(array, index[0], index[1], 'E'):
 				lastDirection = 'W'
 				direction = 'E'
 				index[0] += 1
+				count += 1
 				if re.match(r'[A-Z]', array[index[1]][index[0]]):
 					path.append(array[index[1]][index[0]])
 			elif lastDirection != 'W' and canContinue(array, index[0], index[1], 'W'):
 				lastDirection = 'E'
 				direction = 'W'
 				index[0] -= 1
+				count += 1
 				if re.match(r'[A-Z]', array[index[1]][index[0]]):
 					path.append(array[index[1]][index[0]])
 			else:
-				return path
-	return path
+				return path, count
+	return path, count
 
 def checkIndex(array, x, y):
 	return array[y][x]
@@ -138,11 +144,11 @@ class TestDay14(unittest.TestCase):
 
 	def test4(self):
 		t = load('Day19Test1.txt')
-		self.assertEqual(calc(t), ['A', 'B', 'C', 'D', 'E', 'F'])
+		self.assertEqual(calc(t)[0], ['A', 'B', 'C', 'D', 'E', 'F'])
 
 if __name__ == '__main__':
 	#unittest.main()
 	# Part 1: LXWCKGRAOY
 	print(calc(load('Day19.txt')))
-	# Part 2:
+	# Part 2: 17302
 
