@@ -11,6 +11,9 @@ def calc(data):
 			closestI = i
 	return closestI
 
+def calc2(data):
+	return -1
+
 def load(path):
 	data = {}
 	i = 0
@@ -51,6 +54,10 @@ class TestDay14(unittest.TestCase):
 	def test3(self):
 		t = load('Day20Test1.txt')
 		self.assertEqual(calc(t), 0)
+
+	def test4(self):
+		t = load('Day20Test2.txt')
+		self.assertEqual(calc2(t), 1)
 
 if __name__ == '__main__':
 	#unittest.main()
