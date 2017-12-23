@@ -12,6 +12,9 @@ def calc(data):
 	return closestI
 
 def calc2(data):
+	cc = 0
+	while cc < 10:
+		
 	return -1
 
 def load(path):
