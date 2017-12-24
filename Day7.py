@@ -11,7 +11,16 @@ def calc2(data):
 	tree = treeify(data)
 	rootName = calc(data)
 	root = tree.get(rootName)
-	index = compWeight(root)
+	index, dif = compWeight(root)
+	while True:
+		if index >= 0:
+			lastDif = dif
+			root = root.children[index]
+			index, dif = compWeight(root)
+		else:
+			for i in root.children:
+				lastDif -= calcWeight(i)
+			return lastDif
 	return -1
 
 def compWeight(root):
@@ -30,8 +39,7 @@ def compWeight(root):
 		dif = weights[index - 1] - value
 	else:
 		dif = weights[index + 1] - value
-	print(root.children[i].name, weights, i)
-	return i
+	return index, (value + dif)
 
 def treeify(data):
 	d = {}
@@ -108,9 +116,13 @@ class TestDay7(unittest.TestCase):
 		root = tree.get(rootName)
 		self.assertEqual(calcWeight(root.children[2]), 243)
 
+	def test5(self):
+		path = load('Day7Test1.txt')
+		self.assertEqual(calc2(path), 60)
+
 if __name__ == '__main__':
 	#unittest.main()
 	# Part 1: ykpsek
 	print(calc(load('Day7.txt')))
-	#Part 2:
+	#Part 2: 1060
 	print(calc2(load('Day7.txt')))
