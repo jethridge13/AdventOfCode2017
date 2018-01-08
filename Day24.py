@@ -1,12 +1,32 @@
 import unittest
 
 def calc(l):
-	# TODO Recursively go through all bridges
 	# Then compare strengths
 	r = buildRecursively(0, l)
 	finalScore = 0
 	l = []
 	for i in r:
+		s = score(i)
+		if s > finalScore:
+			finalScore = s
+			l = i
+	return finalScore
+
+def calc2(l):
+	r = buildRecursively(0, l)
+	lenScore = 0
+	candidates = []
+	for i in r:
+		if len(i) >= lenScore:
+			if len(i) > lenScore:
+				candidates = []
+				candidates.append(i)
+				lenScore = len(i)
+			else:
+				candidates.append(i)
+	finalScore = 0
+	l = []
+	for i in candidates:
 		s = score(i)
 		if s > finalScore:
 			finalScore = s
@@ -71,9 +91,13 @@ class TestDay14(unittest.TestCase):
 		t = load('Day24Test1.txt')
 		self.assertEqual(calc(t), 31)
 
+	def test5(self):
+		t = load('Day24Test1.txt')
+		self.assertEqual(calc2(t), 19)
+
 if __name__ == '__main__':
 	#unittest.main()
 	# Part 1: 1656
-	print(calc(load('Day24.txt')))
-	# Part 2:
-
+	#print(calc(load('Day24.txt')))
+	# Part 2: 1642
+	# print(calc2(load('Day24.txt')))
