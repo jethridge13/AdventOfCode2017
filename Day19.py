@@ -124,7 +124,7 @@ def load(path):
 			data.append(line)
 	return data
 
-class TestDay14(unittest.TestCase):
+class TestDay19(unittest.TestCase):
 
 	def test1(self):
 		t = load('Day19Test1.txt')

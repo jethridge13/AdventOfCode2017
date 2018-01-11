@@ -92,7 +92,7 @@ def load(path):
 			data.append(list(l))
 	return data
 
-class TestDay14(unittest.TestCase):
+class TestDay22(unittest.TestCase):
 
 	def test1(self):
 		m = [['.', '.', '#'],

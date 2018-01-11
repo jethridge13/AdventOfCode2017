@@ -27,7 +27,7 @@ def spinList(array, value, pos, steps):
 	pos = (pos + steps) % len(array)
 	return array[:pos + 1] + [value] + array[pos + 1:], pos + 1
 
-class TestDay14(unittest.TestCase):
+class TestDay17(unittest.TestCase):
 
 	def test1(self):
 		self.assertEqual(spinList([0], 1, 0, 3), ([0, 1], 1))

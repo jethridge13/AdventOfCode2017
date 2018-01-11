@@ -40,7 +40,7 @@ def breakIntoLetters(line):
 	data['z'] = int(line[2])
 	return data
 
-class TestDay14(unittest.TestCase):
+class TestDay20(unittest.TestCase):
 
 	def test1(self):
 		t = 'p=< 3,0,0>'

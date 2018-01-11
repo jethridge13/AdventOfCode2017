@@ -60,7 +60,7 @@ def load(path):
 		return f
 	return -1
 
-class TestDay14(unittest.TestCase):
+class TestDay15(unittest.TestCase):
 
 	def test1(self):
 		self.assertEqual(generateNumber(65, 16807), 1092455)

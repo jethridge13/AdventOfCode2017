@@ -8,8 +8,8 @@ def calc(clues, rounds):
 	image = [['.', '#', '.'],
 			 ['.', '.', '#'],
 			 ['#', '#', '#']]
+	printImage(image)
 	for i in range(rounds):
-		print(i)
 		parts = breakIntoParts(image)
 		image = transformParts(parts, clues)
 		printImage(image)
@@ -74,7 +74,6 @@ def breakIntoParts(array):
 				l2 = [array[i+1][j], array[i+1][j+1]]
 				l = [l1, l2]
 				parts.append(l)
-	print(parts)
 	return parts
 
 def transformParts(parts, clues):
@@ -86,14 +85,14 @@ def transformParts(parts, clues):
 	r = []
 	items = 0
 	for i in newParts:
-		items += len(i)
-	w = int(math.sqrt(items))
-	print('items', items, 'w', w)
-	# print(newParts)
+		for j in i:
+			items += len(j)
+	w = int(math.sqrt(items)) // len(newParts[0])
+	#print('items', items, 'w', w)
 	index = 0
 	while(newParts):
 		r.append([])
-		for i in range(w - 1):
+		for i in range(w):
 			try:
 				r[-1] += newParts[index].pop(0)
 				if len(newParts[index]) <= 0:
@@ -122,7 +121,7 @@ def printImage(array):
 			print(j, end='')
 		print()
 
-class TestDay14(unittest.TestCase):
+class TestDay21(unittest.TestCase):
 
 	def test1(self):
 		t = [['.', '.'],
@@ -228,7 +227,7 @@ class TestDay14(unittest.TestCase):
 
 if __name__ == '__main__':
 	#unittest.main()
-	# Part 1:
-	calc(load('Day21.txt'), 5)
+	# Part 1: >114 >150 <344 <256
+	print(calc(load('Day21.txt'), 5))
 	# Part 2:
 

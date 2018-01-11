@@ -40,7 +40,7 @@ def calcWithRules():
 	rules = {'A': a, 'B': b, 'C': c, 'D': d, 'E': e, 'F': f}
 	return calc(startState, steps, rules)
 
-class TestDay14(unittest.TestCase):
+class TestDay25(unittest.TestCase):
 
 	def test1(self):
 		a = {0: {'write': 1, 'move': 1, 'state': 'B'},

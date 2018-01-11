@@ -53,7 +53,7 @@ def load(path):
 		data = f.read().split(',')
 	return data
 
-class TestDay14(unittest.TestCase):
+class TestDay16(unittest.TestCase):
 
 	def test1(self):
 		t = 'abcde'

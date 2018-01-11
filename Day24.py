@@ -67,7 +67,7 @@ def load(path):
 			data.append((int(s[0]), int(s[1])))
 	return data
 
-class TestDay14(unittest.TestCase):
+class TestDay24(unittest.TestCase):
 
 	def test1(self):
 		t = 'Day24Test1.txt'

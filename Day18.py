@@ -224,7 +224,7 @@ def load(path):
 			data.append(line)
 	return data
 
-class TestDay14(unittest.TestCase):
+class TestDay18(unittest.TestCase):
 
 	def test1(self):
 		t = parseIns('snd X')
