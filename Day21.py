@@ -59,20 +59,20 @@ def getNextPiece(clue, m):
 
 def breakIntoParts(array):
 	parts = []
-	if len(array) % 3 == 0:
+	if len(array) % 2 == 0:
+		for i in range(0, len(array), 2):
+			for j in range(0, len(array[i]), 2):
+				l1 = [array[i][j], array[i][j+1]]
+				l2 = [array[i+1][j], array[i+1][j+1]]
+				l = [l1, l2]
+				parts.append(l)
+	else:
 		for i in range(0, len(array), 3):
 			for j in range(0, len(array), 3):
 				l1 = [array[i][j], array[i][j+1], array[i][j+2]]
 				l2 = [array[i+1][j], array[i+1][j+1], array[i+1][j+2]]
 				l3 = [array[i+2][j], array[i+2][j+1], array[i+2][j+2]]
 				l = [l1, l2, l3]
-				parts.append(l)
-	else:
-		for i in range(0, len(array), 2):
-			for j in range(0, len(array[i]), 2):
-				l1 = [array[i][j], array[i][j+1]]
-				l2 = [array[i+1][j], array[i+1][j+1]]
-				l = [l1, l2]
 				parts.append(l)
 	return parts
 
@@ -163,6 +163,8 @@ class TestDay21(unittest.TestCase):
 		self.assertEqual(arrayify(s), t)
 
 	def test6(self):
+		# TODO After getting the correct answer for part 1,
+		# these tests fail. Assertions are wrong.
 		t = [['#', '#', '.', '#', '#', '.'],
 			['#', '.', '.', '#', '.', '.'],
 			['.', '.', '.', '.', '.', '.'],
@@ -227,7 +229,7 @@ class TestDay21(unittest.TestCase):
 
 if __name__ == '__main__':
 	#unittest.main()
-	# Part 1: >114 >150 <344 <256
+	# Part 1: 203
 	print(calc(load('Day21.txt'), 5))
 	# Part 2:
 
