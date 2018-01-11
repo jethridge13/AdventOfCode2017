@@ -1,4 +1,5 @@
 import unittest
+import math
 
 def calc(ins):
 	reg = { 'a': 0, 'b': 0, 'c': 0,
@@ -38,6 +39,17 @@ def calc(ins):
 		i += 1
 	return mulCount
 
+def calc2():
+	# See notes
+	b = 109300
+	c = 126300
+	h = 0
+	
+	for b in range(109300, c+1, 17):
+		if not prime(b):
+			h += 1
+	return h
+
 def parseIns(line):
 	line = line.replace('\n', '')
 	stuff = line.split(' ')
@@ -57,6 +69,17 @@ def checkInt(s):
 	if s[0] in ('-', '+'):
 		return s[1:].isdigit()
 	return s.isdigit()
+
+def prime(n):
+	if n == 2:
+		return True
+	if n % 2 == 0 or n <= 1:
+		return False
+	ceiling = int(math.sqrt(n)) + 1
+	for i in range(3, ceiling):
+		if n % i == 0:
+			return False
+	return True
 
 def load(path):
 	data = []
@@ -78,5 +101,5 @@ if __name__ == '__main__':
 	#unittest.main()
 	# Part 1: 8281
 	print(calc(load('Day23.txt')))
-	# Part 2:
-
+	# Part 2: 911
+	print(calc2())
