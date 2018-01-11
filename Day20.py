@@ -12,10 +12,51 @@ def calc(data):
 	return closestI
 
 def calc2(data):
-	cc = 0
-	while cc < 10:
-		
-	return -1
+	turnsWOCol = 0
+	while turnsWOCol < 1000:
+		cMap = checkForCollisions(data)
+		dataBefore = data
+		data = removeCollisions(data, cMap)
+		if len(data) == len(dataBefore):
+			turnsWOCol += 1
+		else:
+			turnsWOCol = 0
+		data = moveParticles(data)
+	return len(data)
+
+def checkForCollisions(data):
+	pMap = {}
+	cMap = {}
+	for i in data:
+		check = tuple(data[i]['p'].values())
+		if pMap.get(check):
+			cMap[check] = 1
+		else:
+			pMap[check] = 1
+	return cMap
+
+def removeCollisions(data, cMap):
+	toDel = []
+	for i in data.keys():
+		check = tuple(data[i]['p'].values())
+		if cMap.get(check):
+			toDel.append(i)
+	for i in toDel:
+		del data[i]
+	return data
+
+def moveParticles(data):
+	for i in data:
+		a = data[i]['a']
+		v = data[i]['v']
+		p = data[i]['p']
+		data[i]['v']['x'] += a['x']
+		data[i]['v']['y'] += a['y']
+		data[i]['v']['z'] += a['z']
+		data[i]['p']['x'] += v['x']
+		data[i]['p']['y'] += v['y']
+		data[i]['p']['z'] += v['z']
+	return data
 
 def load(path):
 	data = {}
@@ -62,9 +103,20 @@ class TestDay20(unittest.TestCase):
 		t = load('Day20Test2.txt')
 		self.assertEqual(calc2(t), 1)
 
+	def test5(self):
+		t = load('Day20Test3.txt')
+		self.assertEqual(len(checkForCollisions(t)), 1)
+
+	def test6(self):
+		t = load('Day20Test3.txt')
+		self.assertEqual(
+			len(removeCollisions(t, checkForCollisions(t))),
+			1)
+
+
 if __name__ == '__main__':
 	#unittest.main()
 	# Part 1: 144
 	print(calc(load('Day20.txt')))
-	# Part 2:
-
+	# Part 2: 477
+	print(calc2(load('Day20.txt')))
