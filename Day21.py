@@ -8,11 +8,11 @@ def calc(clues, rounds):
 	image = [['.', '#', '.'],
 			 ['.', '.', '#'],
 			 ['#', '#', '#']]
-	printImage(image)
+	#printImage(image)
 	for i in range(rounds):
 		parts = breakIntoParts(image)
 		image = transformParts(parts, clues)
-		printImage(image)
+		#printImage(image)
 	return score(image)
 
 def lineify(array):
@@ -231,5 +231,5 @@ if __name__ == '__main__':
 	#unittest.main()
 	# Part 1: 203
 	print(calc(load('Day21.txt'), 5))
-	# Part 2:
-
+	# Part 2: 3342470
+	print(calc(load('Day21.txt'), 18))
