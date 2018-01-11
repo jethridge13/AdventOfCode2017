@@ -8,7 +8,7 @@ def load(path):
 		return f
 	return -1
 
-class TestDay14(unittest.TestCase):
+class TestDay(unittest.TestCase):
 
 	def test1(self):
 
