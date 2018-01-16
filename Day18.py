@@ -53,151 +53,130 @@ def calc(ins):
 		i += 1
 	return lastPlayedSound
 
-def calc2(ins):
-	threads = []
-	sent = [0]
-	threads.append(Thread(target=threadCalc, args=(ins, 0, sent)))
-	threads.append(Thread(target=threadCalc, args=(ins, 1, sent)))
-	for i in threads:
-		i.start()
-	for i in threads:
-		i.join()
-	return sent[0]
-
-rcv = [False, False]
-rcvSent = [0, 0]
-
-rcv0Queue = []
-rcv1Queue = []
-
-rcvLock = threading.Lock()
-rcv0QLock = threading.Lock()
-rcv1QLock = threading.Lock()
-
-def threadCalc(ins, tid, sent):
-	global rcv0
-	global rcv1
-	global rcv0Queue
-	global rcv1Queue
-	global rcvLock
-	global rcvSent
-	reg = {}
-	reg['p'] = tid
-	i = 0
-	insSent = 0
+def calc2Single(ins):
+	rcv0Q = []
+	rcv1Q = []
+	waiting0 = False
+	waiting1 = False
+	reg0 = {'p': 0}
+	reg1 = {'p': 1}
+	sent = 0
+	i0 = 0
+	i1 = 1
 	while True:
-		data = parseIns(ins[i])
-		print(tid, data, reg, i)
-		# Create register if necessary
-		if reg.get(data['reg']) == None and \
-		not checkInt(data['reg']):
-			reg[data['reg']] = 0
-		if data.get('val') is not None and \
-		not isinstance(data['val'], int) and \
-		reg.get(data['val']) == None:
-			reg[data['val']] = 0
-		# Parse instructions
-		if data['ins'] == 'snd':
-			if tid == 0:
-				rcv1QLock.acquire()
+		while not waiting0:
+			data = parseIns(ins[i0])
+			#print(data)
+			if reg0.get(data['reg']) == None:
+				reg0[data['reg']] = 0
+			if data.get('val') is not None and \
+			not isinstance(data['val'], int) and \
+			reg0.get(data['val']) == None:
+				reg0[data['val']] = 0
+			# Parse instructions
+			if data['ins'] == 'snd':
 				if checkInt(data['reg']):
-					rcv1Queue.append(int(data['reg']))
+					rcv1Q.append(int(data['reg']))
 				else:
-					rcv1Queue.append(reg[data['reg']])
-				rcvSent[0] += 1
-				rcv1QLock.release()
-			else:
-				insSent += 1
-				rcv0QLock.acquire()
-				if checkInt(data['reg']):
-					rcv0Queue.append(int(data['reg']))
-				else:
-					rcv0Queue.append(reg[data['reg']])
-				rcvSent[1] += 1
-				rcv0QLock.release()
-		elif data['ins'] == 'set':
-			if isinstance(data['val'], int):
-				reg[data['reg']] = data['val']
-			else:
-				reg[data['reg']] = reg[data['val']]
-		elif data['ins'] == 'add':
-			if isinstance(data['val'], int):
-				reg[data['reg']] += data['val']
-			else:
-				reg[data['reg']] += reg[data['val']]
-		elif data['ins'] == 'mul':
-			if isinstance(data['val'], int):
-				reg[data['reg']] *= data['val']
-			else:
-				reg[data['reg']] *= reg[data['val']]
-		elif data['ins'] == 'mod':
-			if isinstance(data['val'], int):
-				reg[data['reg']] %= data['val']
-			else:
-				reg[data['reg']] %= reg[data['val']]
-		elif data['ins'] == 'rcv':
-			if tid == 0:
-				while True:
-					rcvLock.acquire()
-					if len(rcv0Queue) > 0:
-						reg[data['reg']] = rcv0Queue.pop()
-						rcvSent[1] -= 1
-						popped = True
-						rcv[0] = False
-						rcvLock.release()
-						break;
-					rcv[0] = True
-					rcvLock.release()
-					rcvLock.acquire()
-					if rcv[1]:
-						rcv1QLock.acquire()
-						if not popped and not rcvSent[0] and not rcvSent[1]:
-							rcv1QLock.release()
-							rcvLock.release()
-							print(tid, 'Returning')
-							return
-						rcv1QLock.release()
-					popped = False
-					rcvLock.release()
-			else:
-				while True:
-					rcvLock.acquire()
-					if len(rcv1Queue) > 0:
-						reg[data['reg']] = rcv1Queue.pop()
-						rcvSent[0] -= 1
-						popped = True
-						rcv[1] = False
-						rcvLock.release()
-						break;
-					rcv[1] = True
-					rcvLock.release()
-					rcvLock.acquire()
-					if rcv[0]:
-						rcv0QLock.acquire()
-						if not popped and not rcvSent[0] and not rcvSent[1]:
-							rcvLock.release()
-							rcv0QLock.release()
-							sent[0] = insSent
-							print(tid, 'Returning')
-							print(insSent)
-							return
-						rcv0QLock.release()
-					popped = False
-					rcvLock.release()
-		elif data['ins'] == 'jgz':
-			if checkInt(data['reg']) and int(data['reg']) > 0:
+					rcv1Q.append(reg0[data['reg']])
+			elif data['ins'] == 'set':
 				if isinstance(data['val'], int):
-					i += data['val'] - 1
+					reg0[data['reg']] = data['val']
 				else:
-					i += reg[data['val']] - 1
-			elif reg[data['reg']] > 0:
+					reg0[data['reg']] = reg0[data['val']]
+			elif data['ins'] == 'add':
 				if isinstance(data['val'], int):
-					i += data['val'] - 1
+					reg0[data['reg']] += data['val']
 				else:
-					i += reg[data['val']] - 1
-		i += 1
-	return insSent
+					reg0[data['reg']] += reg0[data['val']]
+			elif data['ins'] == 'mul':
+				if isinstance(data['val'], int):
+					reg0[data['reg']] *= data['val']
+				else:
+					reg0[data['reg']] *= reg0[data['val']]
+			elif data['ins'] == 'mod':
+				if isinstance(data['val'], int):
+					reg0[data['reg']] %= data['val']
+				else:
+					reg0[data['reg']] %= reg0[data['val']]
+			elif data['ins'] == 'rcv':
+				if len(rcv0Q) > 0:
+					reg0[data['reg']] = rcv0Q.pop(0)
+				else:
+					waiting0 = True
+					i0 -= 1
+			elif data['ins'] == 'jgz':
+				if checkInt(data['reg']) and int(data['reg']) > 0:
+					if isinstance(data['val'], int):
+						i0 += data['val'] - 1
+					else:
+						i0 += reg0[data['val']] - 1
+				elif reg0[data['reg']] > 0:
+					if isinstance(data['val'], int):
+						i0 += data['val'] - 1
+					else:
+						i0 += reg0[data['val']] - 1
+			i0 += 1
 
+		while not waiting1:
+			data = parseIns(ins[i1])
+			#print(data)
+			if reg1.get(data['reg']) == None:
+				reg1[data['reg']] = 0
+			if data.get('val') is not None and \
+			not isinstance(data['val'], int) and \
+			reg1.get(data['val']) == None:
+				reg1[data['val']] = 0
+			# Parse instructions
+			if data['ins'] == 'snd':
+				sent += 1
+				if checkInt(data['reg']):
+					rcv0Q.append(int(data['reg']))
+				else:
+					rcv0Q.append(reg1[data['reg']])
+			elif data['ins'] == 'set':
+				if isinstance(data['val'], int):
+					reg1[data['reg']] = data['val']
+				else:
+					reg1[data['reg']] = reg1[data['val']]
+			elif data['ins'] == 'add':
+				if isinstance(data['val'], int):
+					reg1[data['reg']] += data['val']
+				else:
+					reg1[data['reg']] += reg1[data['val']]
+			elif data['ins'] == 'mul':
+				if isinstance(data['val'], int):
+					reg1[data['reg']] *= data['val']
+				else:
+					reg1[data['reg']] *= reg1[data['val']]
+			elif data['ins'] == 'mod':
+				if isinstance(data['val'], int):
+					reg1[data['reg']] %= data['val']
+				else:
+					reg1[data['reg']] %= reg1[data['val']]
+			elif data['ins'] == 'rcv':
+				if len(rcv1Q) > 0:
+					reg1[data['reg']] = rcv1Q.pop(0)
+				else:
+					waiting1 = True
+					i1 -= 1
+			elif data['ins'] == 'jgz':
+				if checkInt(data['reg']) and int(data['reg']) > 0:
+					if isinstance(data['val'], int):
+						i1 += data['val'] - 1
+					else:
+						i1 += reg1[data['val']] - 1
+				elif reg1[data['reg']] > 0:
+					if isinstance(data['val'], int):
+						i1 += data['val'] - 1
+					else:
+						i1 += reg1[data['val']] - 1
+			i1 += 1
+		if (waiting0 and waiting1) and not len(rcv0Q) and not len(rcv1Q):
+			return sent
+		waiting0 = False
+		waiting1 = False
+	return sent
 
 def checkInt(s):
 	if s[0] in ('-', '+'):
@@ -241,11 +220,11 @@ class TestDay18(unittest.TestCase):
 
 	def test3(self):
 		t = load('Day18Test2.txt')
-		self.assertEqual(calc2(t), 3)
+		self.assertEqual(calc2Single(t), 3)
 
 if __name__ == '__main__':
-	unittest.main()
+	#unittest.main()
 	# Part 1: 8600
 	print(calc(load('Day18.txt')))
-	# Part 2: >6589 <7690 NOT 7201 NOT 131
-	print(calc2(load('Day18.txt')))
+	# Part 2: 7239
+	print(calc2Single(load('Day18.txt')))
